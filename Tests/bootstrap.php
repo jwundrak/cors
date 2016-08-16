@@ -10,13 +10,18 @@ define('TYPO3_MODE', 'BE');
 putenv('TYPO3_CONTEXT=Testing');
 
 call_user_func(function($composerClassLoader, $bootstrap) {
-  // Use old setup order for TYPO3 < 7.3
+  // TYPO3 < 7.3
   if (method_exists($bootstrap, 'unregisterClassLoader')) {
     $bootstrap->baseSetup('typo3/');
     $bootstrap->initializeClassLoader();
-  } else {
+  // TYPO3 < 8.x
+  } elseif (!method_exists($bootstrap, 'setRequestType')) {
     $bootstrap->initializeClassLoader($composerClassLoader);
     $bootstrap->baseSetup('typo3/');
+  } else {
+    $bootstrap->initializeClassLoader($composerClassLoader);
+    $bootstrap->setRequestType(TYPO3_REQUESTTYPE_BE | TYPO3_REQUESTTYPE_CLI);
+    $bootstrap->baseSetup(1);
   }
 
   // Backwards compatibility with TYPO3 < 7.3
